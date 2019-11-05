@@ -1,13 +1,18 @@
-package Test;
+package console.minesweeper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-import static Test.Utility.isNumeric;
-import static Test.Utility.convertSingleDigitIntegerToCharacter;
-import static Test.Utility.getRandomCoordinatesWithoutDuplicates;
+
+import console.minesweeper.model.CommandSelected;
+import console.minesweeper.model.Coordinate;
+import console.minesweeper.model.MinesweeperBlock;
+import console.minesweeper.model.UserOption;
+
+import static console.minesweeper.util.Utility.isNumeric;
+import static console.minesweeper.util.Utility.convertSingleDigitIntegerToCharacter;
+import static console.minesweeper.util.Utility.getRandomCoordinatesWithoutDuplicates;
 
 public class Minesweeper {
     private static final String GREETING_MESSAGE = "Hi, lets play minesweeper!";
@@ -21,12 +26,18 @@ public class Minesweeper {
     private static final String INVALID_COORDINATE = "x and y should be in area! P.S.: area.lengthY=%s. area.lengthX=%s";
 
     private static final Scanner SCANNER = new Scanner(System.in);
+    
+    public static void main(String[] args) {
+    	Minesweeper mineSweeper = new Minesweeper();
+    	
+    	mineSweeper.play();
+    }
 
     public void play() {
         boolean isWin = false;
 
         System.out.println(GREETING_MESSAGE);
-        Mark[][] grid = getLengthsOfAreaFromUser(SCANNER);
+        MinesweeperBlock[][] grid = getLengthsOfAreaFromUser(SCANNER);
 
         final int numberOfBombs = getNumberOfBombsFromUser(grid, SCANNER);
         System.out.println("hi");
@@ -35,9 +46,9 @@ public class Minesweeper {
         while(true) {
             printGrid(grid, true);
 
-            Mark mark = playerMakeAMove(grid, SCANNER);
+            MinesweeperBlock mark = playerMakeAMove(grid, SCANNER);
 
-            if(mark == Mark.BOMB) {
+            if(mark == MinesweeperBlock.BOMB) {
                 isWin = false;
                 break;
             }
@@ -57,10 +68,10 @@ public class Minesweeper {
         }
     }
 
-    private boolean playerHasWonGame(Mark[][] area) {
-        for (Mark[] markArray : area) {
-            for (Mark mark : markArray) {
-                if (mark == Mark.EMPTY) {
+    private boolean playerHasWonGame(MinesweeperBlock[][] area) {
+        for (MinesweeperBlock[] markArray : area) {
+            for (MinesweeperBlock mark : markArray) {
+                if (mark == MinesweeperBlock.EMPTY) {
                     return false;
                 }
             }
@@ -70,41 +81,41 @@ public class Minesweeper {
     }
 
     /**
-     * Prompt the user to open a location or mark a location & return the updated {@link Mark} at the location 
+     * Prompt the user to open a location or mark a location & return the updated {@link MinesweeperBlock} at the location 
      */
-    private Mark playerMakeAMove(Mark[][] area, Scanner scanner) {
+    private MinesweeperBlock playerMakeAMove(MinesweeperBlock[][] area, Scanner scanner) {
         CommandSelected selectedCommand = getValidCommandFromUser(scanner, area);
         int x = selectedCommand.getCoordinate().getX();
         int y = selectedCommand.getCoordinate().getY();
 
-        Mark markOnArea = area[y][x];
+        MinesweeperBlock markOnArea = area[y][x];
         if(selectedCommand.getUserOption() == UserOption.OPEN) {
-            if(markOnArea == Mark.BOMB) {
-                return Mark.BOMB;
+            if(markOnArea == MinesweeperBlock.BOMB) {
+                return MinesweeperBlock.BOMB;
             }
             else {
                 int numberOfBombsSurrounding = countBombsAtLocations(area, getSurroundingCoordinates(area, false, selectedCommand.getCoordinate()));
 
                 if (numberOfBombsSurrounding == 0) {
-                    area[y][x] = Mark.OPEN;
+                    area[y][x] = MinesweeperBlock.OPEN;
                     openAllAround(x, y, area);
                 }
                 else {
                     // E.G convert from 1 to "Mark.ONE_BOMB".
                     char character = convertSingleDigitIntegerToCharacter(numberOfBombsSurrounding);
-                    area[y][x] = Mark.valueOf(character);
+                    area[y][x] = MinesweeperBlock.valueOf(character);
                 }
 
                 return area[y][x];
             }
         }
         else {
-            area[y][x] = Mark.MARKED_AS_BOMB;
-            return Mark.MARKED_AS_BOMB;
+            area[y][x] = MinesweeperBlock.MARKED_AS_BOMB;
+            return MinesweeperBlock.MARKED_AS_BOMB;
         }
     }
 
-    private CommandSelected getValidCommandFromUser(Scanner scanner, Mark[][] area) {
+    private CommandSelected getValidCommandFromUser(Scanner scanner, MinesweeperBlock[][] area) {
         while (true) {
             System.out.println(PROMPT_USER_FOR_COMMAND);
             String[] commandAndXAndY = scanner.nextLine().split(" ");
@@ -133,40 +144,40 @@ public class Minesweeper {
         }
     }
 
-    private void openAllAround(int x, int y, Mark[][] area) {
+    private void openAllAround(int x, int y, MinesweeperBlock[][] area) {
         List<Coordinate> coordinatesInArea = getAllSurroundingCoordinates(area, false, x, y);
 
         for(Coordinate coordinate : coordinatesInArea) {
-            Mark markAtLocation = area[coordinate.getY()][coordinate.getX()];
+            MinesweeperBlock markAtLocation = area[coordinate.getY()][coordinate.getX()];
 
-            if (!hasLocationBeenMarked(markAtLocation) && Mark.BOMB != markAtLocation) {
+            if (!hasLocationBeenMarked(markAtLocation) && MinesweeperBlock.BOMB != markAtLocation) {
                 int numberOfBombsSurrounding = countBombsAtLocations(area, getSurroundingCoordinates(area, false, coordinate));
 
                 if (numberOfBombsSurrounding == 0) {
-                    area[coordinate.getY()][coordinate.getX()] = Mark.OPEN;
+                    area[coordinate.getY()][coordinate.getX()] = MinesweeperBlock.OPEN;
                     openAllAround(coordinate.getX(), coordinate.getY(), area);
                 }
                 else {
                     // E.G convert from 1 to "Mark.ONE_BOMB".
                     char character = convertSingleDigitIntegerToCharacter(numberOfBombsSurrounding);
-                    area[coordinate.getY()][coordinate.getX()] = Mark.valueOf(character);
+                    area[coordinate.getY()][coordinate.getX()] = MinesweeperBlock.valueOf(character);
                 }
             }
         }
     }
 
-    private boolean hasLocationBeenMarked(Mark location) {
-        final List<Mark> LOCATIONS_THAT_SHOULD_NOT_BE_MARKED = Arrays.asList(
-                Mark.MARKED_AS_BOMB,
-                Mark.ONE_BOMB_AROUND,
-                Mark.TWO_BOMB_AROUND,
-                Mark.THREE_BOMB_AROUND,
-                Mark.FOUR_BOMB_AROUND,
-                Mark.FIVE_BOMB_AROUND,
-                Mark.SIX_BOMB_AROUND,
-                Mark.SEVEN_BOMB_AROUND,
-                Mark.EIGHT_BOMB_AROUND,
-                Mark.OPEN
+    private boolean hasLocationBeenMarked(MinesweeperBlock location) {
+        final List<MinesweeperBlock> LOCATIONS_THAT_SHOULD_NOT_BE_MARKED = Arrays.asList(
+                MinesweeperBlock.MARKED_AS_BOMB,
+                MinesweeperBlock.ONE_BOMB_AROUND,
+                MinesweeperBlock.TWO_BOMB_AROUND,
+                MinesweeperBlock.THREE_BOMB_AROUND,
+                MinesweeperBlock.FOUR_BOMB_AROUND,
+                MinesweeperBlock.FIVE_BOMB_AROUND,
+                MinesweeperBlock.SIX_BOMB_AROUND,
+                MinesweeperBlock.SEVEN_BOMB_AROUND,
+                MinesweeperBlock.EIGHT_BOMB_AROUND,
+                MinesweeperBlock.OPEN
         );
 
         return LOCATIONS_THAT_SHOULD_NOT_BE_MARKED.contains(location);
@@ -175,7 +186,7 @@ public class Minesweeper {
     /**
      * Returns all valid unmarked coordinates surrounding the area of the coordinate passed
      */
-    private List<Coordinate> getAllSurroundingCoordinates(Mark[][] area, boolean includeCoordinatePassed, int xCoord, int yCoord) {
+    private List<Coordinate> getAllSurroundingCoordinates(MinesweeperBlock[][] area, boolean includeCoordinatePassed, int xCoord, int yCoord) {
         List<Coordinate> validCoordinatesInArea = new ArrayList<Coordinate>();
 
         // We want the coord itself, the coord -1 and the coord + 1 to get the full area
@@ -193,15 +204,15 @@ public class Minesweeper {
         return validCoordinatesInArea;
     }
 
-    private List<Coordinate> getSurroundingCoordinates(Mark[][] area, boolean includeCoordinatePassed, Coordinate coordinate) {
+    private List<Coordinate> getSurroundingCoordinates(MinesweeperBlock[][] area, boolean includeCoordinatePassed, Coordinate coordinate) {
         return getAllSurroundingCoordinates(area, includeCoordinatePassed, coordinate.getX(), coordinate.getY());
     }
 
-    private int countBombsAtLocations(Mark[][] grid, Coordinate... coordinatesToCountBombsIn) {
+    private int countBombsAtLocations(MinesweeperBlock[][] grid, Coordinate... coordinatesToCountBombsIn) {
         int numberOfBombs = 0;
 
         for (Coordinate coordinate : coordinatesToCountBombsIn) {
-            if (grid[coordinate.getY()][coordinate.getX()] == Mark.BOMB) {
+            if (grid[coordinate.getY()][coordinate.getX()] == MinesweeperBlock.BOMB) {
                 numberOfBombs++;
             }
         }
@@ -209,17 +220,17 @@ public class Minesweeper {
         return numberOfBombs;
     }
 
-    private int countBombsAtLocations(Mark[][] grid, List<Coordinate> coordinatesToCountBombsIn) {
+    private int countBombsAtLocations(MinesweeperBlock[][] grid, List<Coordinate> coordinatesToCountBombsIn) {
         Coordinate[] coordinateList = new Coordinate[coordinatesToCountBombsIn.size()];
         return countBombsAtLocations(grid, coordinatesToCountBombsIn.toArray(coordinateList));
     }
 
-    private static void printGrid(Mark[][] grid, boolean hideBombs) {
+    private static void printGrid(MinesweeperBlock[][] grid, boolean hideBombs) {
         System.out.println();
         for(int y = 0; y < grid.length; y++) {
             for(int x=0; x < grid[0].length; x++) {
-                if (hideBombs && grid[y][x] == Mark.BOMB) {
-                    System.out.print(Mark.EMPTY);
+                if (hideBombs && grid[y][x] == MinesweeperBlock.BOMB) {
+                    System.out.print(MinesweeperBlock.EMPTY);
                 }
                 else {
                     System.out.print(grid[y][x]);
@@ -230,14 +241,14 @@ public class Minesweeper {
         }
     }
 
-    private static void fillArea(Mark[][] area, int numberOfBombs) {
-        fillArea(area, Mark.EMPTY);
+    private static void fillArea(MinesweeperBlock[][] area, int numberOfBombs) {
+        fillArea(area, MinesweeperBlock.EMPTY);
 
         // fill area with bombs
-        fillAreaWithRandomMarks(area, numberOfBombs, Mark.BOMB);
+        fillAreaWithRandomMarks(area, numberOfBombs, MinesweeperBlock.BOMB);
     }
 
-    private static void fillArea(Mark[][] area, Mark mark) {
+    private static void fillArea(MinesweeperBlock[][] area, MinesweeperBlock mark) {
         for (int y = 0; y < area.length; y++) {
             for (int x = 0; x < area[y].length; x++) {
                 area[x][y] = mark;
@@ -245,7 +256,7 @@ public class Minesweeper {
         }
     }
 
-    private static void fillAreaWithRandomMarks(Mark[][] area, int numberOfBombs, Mark mark) {
+    private static void fillAreaWithRandomMarks(MinesweeperBlock[][] area, int numberOfBombs, MinesweeperBlock mark) {
         int[][] bombLocations = getRandomCoordinatesWithoutDuplicates(numberOfBombs, area.length, area[0].length);
 
         for (int i = 0; i < bombLocations.length; i ++) {
@@ -290,8 +301,8 @@ public class Minesweeper {
         return numberOfBombs > 0 && (area.length * area[0].length) >= numberOfBombs;
     }
 
-    private static Mark[][] getLengthsOfAreaFromUser(Scanner scanner) {
-        Mark[][] gridCreated = null;
+    private static MinesweeperBlock[][] getLengthsOfAreaFromUser(Scanner scanner) {
+        MinesweeperBlock[][] gridCreated = null;
         while(gridCreated == null) {
             System.out.println(PICK_X_AND_Y_AREA_MESSAGE);
             String[] turnXandY = scanner.nextLine().split(" "); 
@@ -306,14 +317,14 @@ public class Minesweeper {
                 System.out.println("x and y should be greater than 0!");
             }
             else {
-                gridCreated = new Mark[Integer.parseInt(turnXandY[0])][Integer.parseInt(turnXandY[1])];
+                gridCreated = new MinesweeperBlock[Integer.parseInt(turnXandY[0])][Integer.parseInt(turnXandY[1])];
             }
         }
 
         return gridCreated;
     }
 
-    private static boolean isValidCoordinate(int x, int y, Mark[][] area) {
+    private static boolean isValidCoordinate(int x, int y, MinesweeperBlock[][] area) {
         if(x < 0 || area[0].length <= x) {
             return false;
         }
@@ -321,139 +332,5 @@ public class Minesweeper {
             return false;
         }
         return true;
-    }
-}
-
-class Coordinate {
-    int x, y;
-
-    public Coordinate(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public int getX() {
-        return this.x;
-    }
-
-    public int getY() {
-        return this.y;
-    }
-
-    public int[] toArray() {
-        return new int[]{x, y};
-    }
-}
-
-enum UserOption {
-    MARK("MARK"),
-    OPEN("OPEN");
-
-    private String option;
-
-    UserOption(String option) {
-        this.option = option;
-    }
-
-    public static UserOption fromValue(String option) {
-        for (UserOption userOption : values()) {
-            if (userOption.option.equalsIgnoreCase(option)) {
-                return userOption;
-            }
-        }
-
-        return null;
-    }
-}
-
-class CommandSelected {
-    private UserOption optionSelected;
-    private Coordinate coordinateSelected;
-
-    public UserOption getUserOption() {
-        return this.optionSelected;
-    }
-
-    public Coordinate getCoordinate() {
-        return this.coordinateSelected;
-    }
-
-    public CommandSelected(UserOption option, Coordinate coordinate) {
-        this.optionSelected = option;
-        this.coordinateSelected = coordinate;
-    }
-}
-
-class Utility {
-    public static boolean isNumeric(String input) {
-        try {
-            Integer.parseInt(input);
-        } catch (NumberFormatException | NullPointerException nfe) {
-            return false;
-        }
-        return true;
-    }
-
-    public static int[][] getRandomCoordinatesWithoutDuplicates(int numberOfCoordinates, int widthOfGrid, int heightOfGrid) {
-        List<Coordinate> cordinates = new ArrayList<Coordinate>();
-        int[][] randomCoordinates = new int[numberOfCoordinates][2];
-
-        // Get a list of all possible coordinates
-        for (int x = 0; x < widthOfGrid; x++) {
-            for (int y = 0; y < heightOfGrid; y++) {
-                cordinates.add(new Coordinate(x, y));
-            }
-        }
-
-        // shuffle aka randomize the list
-        Collections.shuffle(cordinates);
-
-        // Take top X
-        for (int i = 0; i < numberOfCoordinates; i++) {
-            randomCoordinates[i] = cordinates.get(i).toArray();
-        }
-
-        return randomCoordinates;
-    }
-
-    public static char convertSingleDigitIntegerToCharacter(int number) {
-        return String.valueOf(number).charAt(0);
-    }
-}
-
-// A placement can either be a Bomb, marked by user, selected by user, or "empty" aka untouched & not a bomb
-enum Mark{
-    BOMB('@'), 
-    MARKED_AS_BOMB('X'), 
-    EMPTY('_'), 
-    OPEN('W'),
-    ONE_BOMB_AROUND('1'),
-    TWO_BOMB_AROUND('2'),
-    THREE_BOMB_AROUND('3'),
-    FOUR_BOMB_AROUND('4'),
-    FIVE_BOMB_AROUND('5'),
-    SIX_BOMB_AROUND('6'),
-    SEVEN_BOMB_AROUND('7'),
-    EIGHT_BOMB_AROUND('8');
-
-    char character;
-
-    Mark(char character) {
-        this.character = character;
-    }
-
-    public static Mark valueOf(char character) {
-        for (Mark mark : values()) {
-            if (character == mark.character) {
-                return mark;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(character);
     }
 }
