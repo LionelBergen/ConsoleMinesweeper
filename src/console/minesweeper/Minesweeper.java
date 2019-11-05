@@ -15,9 +15,9 @@ import static console.minesweeper.util.Utility.convertSingleDigitIntegerToCharac
 import static console.minesweeper.util.Utility.getRandomCoordinatesWithoutDuplicates;
 
 public class Minesweeper {
-    private static final String GREETING_MESSAGE = "Hi, lets play minesweeper!";
-    private static final String PICK_X_AND_Y_AREA_MESSAGE = "Pick x.length and y.length of area(print \"x y\"): ";
-    private static final String NUMBER_OF_BOMBS_PROMPT = "print number of bombs: ";
+    private static final String GREETING_MESSAGE = "Lets play minesweeper!";
+    private static final String PICK_X_AND_Y_AREA_MESSAGE = "Pick width & height (E.G \"10 10\"): ";
+    private static final String NUMBER_OF_BOMBS_PROMPT = "How many bombs?: ";
     private static final String PROMPT_USER_FOR_COMMAND = "Print \"open x y\", if u want open this area, print \"mark x y\", if u want mark this area as bomb or unmark this area";
 
     private static final String INCORRECT_COMMAND_NUMBER_OF_ARGUMENTS = "fill out the form correctly!";
@@ -40,7 +40,6 @@ public class Minesweeper {
         MinesweeperBlock[][] grid = getLengthsOfAreaFromUser(SCANNER);
 
         final int numberOfBombs = getNumberOfBombsFromUser(grid, SCANNER);
-        System.out.println("hi");
         fillArea(grid, numberOfBombs);
 
         while(true) {
@@ -51,8 +50,7 @@ public class Minesweeper {
             if(mark == MinesweeperBlock.BOMB) {
                 isWin = false;
                 break;
-            }
-            else if(playerHasWonGame(grid)) {
+            } else if(playerHasWonGame(grid)) {
                 isWin = true;
                 break;
             }
@@ -61,8 +59,7 @@ public class Minesweeper {
         if(isWin) {
             printGrid(grid, false);
             System.out.println("U won!");
-        }
-        else {
+        } else {
             printGrid(grid, false);
             System.out.println("Defieat!");
         }
@@ -92,15 +89,13 @@ public class Minesweeper {
         if(selectedCommand.getUserOption() == UserOption.OPEN) {
             if(markOnArea == MinesweeperBlock.BOMB) {
                 return MinesweeperBlock.BOMB;
-            }
-            else {
+            } else {
                 int numberOfBombsSurrounding = countBombsAtLocations(area, getSurroundingCoordinates(area, false, selectedCommand.getCoordinate()));
 
                 if (numberOfBombsSurrounding == 0) {
                     area[y][x] = MinesweeperBlock.OPEN;
                     openAllAround(x, y, area);
-                }
-                else {
+                } else {
                     // E.G convert from 1 to "Mark.ONE_BOMB".
                     char character = convertSingleDigitIntegerToCharacter(numberOfBombsSurrounding);
                     area[y][x] = MinesweeperBlock.valueOf(character);
@@ -108,8 +103,7 @@ public class Minesweeper {
 
                 return area[y][x];
             }
-        }
-        else {
+        } else {
             area[y][x] = MinesweeperBlock.MARKED_AS_BOMB;
             return MinesweeperBlock.MARKED_AS_BOMB;
         }
@@ -122,22 +116,18 @@ public class Minesweeper {
 
             if(commandAndXAndY.length != 3) {
                 System.out.println(INCORRECT_COMMAND_NUMBER_OF_ARGUMENTS);
-            }
-            else {
+            } else {
                 String commandSelected = commandAndXAndY[0];
                 String xSelected = commandAndXAndY[1];
                 String ySelected = commandAndXAndY[2];
 
                 if(!commandSelected.equalsIgnoreCase("open") && commandSelected.equalsIgnoreCase("mark")) {
                     System.out.println(INVALID_COMMAND);
-                }
-                else if(!isNumeric(xSelected) || !isNumeric(ySelected)) {
+                } else if(!isNumeric(xSelected) || !isNumeric(ySelected)) {
                     System.out.println(COMMAND_NOT_A_NUMBER);
-                }
-                else if(!isValidCoordinate(Integer.parseInt(xSelected), Integer.parseInt(ySelected), area)) {
+                } else if(!isValidCoordinate(Integer.parseInt(xSelected), Integer.parseInt(ySelected), area)) {
                     System.out.print(String.format(INVALID_COORDINATE, area.length, area[0].length));
-                }
-                else {
+                } else {
                     return new CommandSelected(UserOption.fromValue(commandSelected), new Coordinate(Integer.parseInt(xSelected), Integer.parseInt(ySelected)));
                 }
             }
@@ -156,8 +146,7 @@ public class Minesweeper {
                 if (numberOfBombsSurrounding == 0) {
                     area[coordinate.getY()][coordinate.getX()] = MinesweeperBlock.OPEN;
                     openAllAround(coordinate.getX(), coordinate.getY(), area);
-                }
-                else {
+                } else {
                     // E.G convert from 1 to "Mark.ONE_BOMB".
                     char character = convertSingleDigitIntegerToCharacter(numberOfBombsSurrounding);
                     area[coordinate.getY()][coordinate.getX()] = MinesweeperBlock.valueOf(character);
@@ -231,11 +220,9 @@ public class Minesweeper {
             for(int x=0; x < grid[0].length; x++) {
                 if (hideBombs && grid[y][x] == MinesweeperBlock.BOMB) {
                     System.out.print(MinesweeperBlock.EMPTY);
-                }
-                else {
+                } else {
                     System.out.print(grid[y][x]);
                 }
-
             }
             System.out.println();
         }
@@ -309,14 +296,11 @@ public class Minesweeper {
 
             if(turnXandY.length != 2) {
                 System.out.println("print: \"x y\"!");
-            }
-            else if(!isNumeric(turnXandY[0]) || !isNumeric(turnXandY[1])) {
+            } else if(!isNumeric(turnXandY[0]) || !isNumeric(turnXandY[1])) {
                 System.out.println("x and y should be numbers!");
-            }
-            else if(Integer.parseInt(turnXandY[0]) <= 0 || Integer.parseInt(turnXandY[1]) <= 0) {
+            } else if(Integer.parseInt(turnXandY[0]) <= 0 || Integer.parseInt(turnXandY[1]) <= 0) {
                 System.out.println("x and y should be greater than 0!");
-            }
-            else {
+            } else {
                 gridCreated = new MinesweeperBlock[Integer.parseInt(turnXandY[0])][Integer.parseInt(turnXandY[1])];
             }
         }
@@ -325,12 +309,6 @@ public class Minesweeper {
     }
 
     private static boolean isValidCoordinate(int x, int y, MinesweeperBlock[][] area) {
-        if(x < 0 || area[0].length <= x) {
-            return false;
-        }
-        if(y < 0 || area.length <= y) {
-            return false;
-        }
-        return true;
+        return x < 0 || area[0].length <= x || y < 0 || area.length <= y;
     }
 }
