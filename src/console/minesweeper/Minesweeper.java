@@ -23,7 +23,7 @@ public class Minesweeper {
     private static final String INCORRECT_COMMAND_NUMBER_OF_ARGUMENTS = "fill out the form correctly!";
     private static final String INVALID_COMMAND = "first work should be equal \"open\" or \"mark\"!";
     private static final String COMMAND_NOT_A_NUMBER = "x and y should be numbers!";
-    private static final String INVALID_COORDINATE = "x and y should be in area! P.S.: area.lengthY=%s. area.lengthX=%s";
+    private static final String INVALID_COORDINATE = "x and y should be in area! P.S.: area.lengthY = %s. area.lengthX = %s";
 
     private static final Scanner SCANNER = new Scanner(System.in);
     
@@ -34,35 +34,35 @@ public class Minesweeper {
     }
 
     public void play() {
-        boolean isWin = false;
-
         System.out.println(GREETING_MESSAGE);
         MinesweeperBlock[][] grid = getLengthsOfAreaFromUser(SCANNER);
 
         final int numberOfBombs = getNumberOfBombsFromUser(grid, SCANNER);
         fillArea(grid, numberOfBombs);
+        
+        // game loop
+        boolean playerWonGame = playingGame(grid);
 
-        while(true) {
-            printGrid(grid, true);
-
-            MinesweeperBlock mark = playerMakeAMove(grid, SCANNER);
-
-            if(mark == MinesweeperBlock.BOMB) {
-                isWin = false;
-                break;
-            } else if(playerHasWonGame(grid)) {
-                isWin = true;
-                break;
-            }
-        }
-
-        if(isWin) {
+        if(playerWonGame) {
             printGrid(grid, false);
             System.out.println("U won!");
         } else {
             printGrid(grid, false);
             System.out.println("Defieat!");
         }
+    }
+    
+    // Constatly prompts the user for a move until the game is over. Returns true if player has won, false if lose.
+    private boolean playingGame(MinesweeperBlock[][] grid) {
+    	MinesweeperBlock mark = null;
+    	
+    	do {
+            printGrid(grid, true);
+
+            mark = playerMakeAMove(grid, SCANNER);
+        } while(mark != MinesweeperBlock.BOMB && !playerHasWonGame(grid));
+    	
+    	return mark != MinesweeperBlock.BOMB;
     }
 
     private boolean playerHasWonGame(MinesweeperBlock[][] area) {
@@ -126,7 +126,7 @@ public class Minesweeper {
                 } else if(!isNumeric(xSelected) || !isNumeric(ySelected)) {
                     System.out.println(COMMAND_NOT_A_NUMBER);
                 } else if(!isValidCoordinate(Integer.parseInt(xSelected), Integer.parseInt(ySelected), area)) {
-                    System.out.print(String.format(INVALID_COORDINATE, area.length, area[0].length));
+                    System.out.println(String.format(INVALID_COORDINATE, area.length, area[0].length));
                 } else {
                     return new CommandSelected(UserOption.fromValue(commandSelected), new Coordinate(Integer.parseInt(xSelected), Integer.parseInt(ySelected)));
                 }
@@ -309,6 +309,6 @@ public class Minesweeper {
     }
 
     private static boolean isValidCoordinate(int x, int y, MinesweeperBlock[][] area) {
-        return x < 0 || area[0].length <= x || y < 0 || area.length <= y;
+        return x >= 0 && area[0].length > x && y >= 0 && area.length > y;
     }
 }
